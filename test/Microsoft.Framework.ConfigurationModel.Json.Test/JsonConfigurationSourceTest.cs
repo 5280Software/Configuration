@@ -15,8 +15,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void LoadKeyValuePairsFromValidJson()
-        {
-            var json = @"
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"
 {
     'firstname': 'test',
     'test.last.name': 'last.name',
@@ -25,9 +27,9 @@ namespace Microsoft.Framework.ConfigurationModel
             'zipcode': '12345'
         }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Load();
 
             Assert.Equal("test", jsonConfigSrc.Get("firstname"));
             Assert.Equal("last.name", jsonConfigSrc.Get("test.last.name"));
@@ -37,34 +39,40 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void LoadMethodCanHandleEmptyValue()
-        {
-            var json = @"
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"
 {
     'name': ''
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Load();
 
             Assert.Equal(string.Empty, jsonConfigSrc.Get("name"));
         }
 
         [Fact]
         public void NonObjectRootIsInvalid()
-        {
-            var json = @"'test'";
-            var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"'test'";
+            var jsonConfigSource = new JsonConfigurationSource(streamHandler, json);
             var expectedMsg = Resources.FormatError_RootMustBeAnObject(string.Empty, 1, 6);
 
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load());
 
             Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void SupportAndIgnoreComments()
-        {
-            var json = @"/* Comments */
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"/* Comments */
                 {/* Comments */
                 ""name"": /* Comments */ ""test"",
                 ""address"": {
@@ -72,9 +80,9 @@ namespace Microsoft.Framework.ConfigurationModel
                     ""zipcode"": ""12345""
                 }
             }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Load();
 
             Assert.Equal("test", jsonConfigSrc.Get("name"));
             Assert.Equal("Something street", jsonConfigSrc.Get("address:street"));
@@ -83,33 +91,37 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void ArraysAreNotSupported()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
                 'name': 'test',
                 'address': ['Something street', '12345']
             }";
-            var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationSource(streamHandler, json);
             var expectedMsg = Resources.FormatError_UnsupportedJSONToken("StartArray", "address", 3, 29);
 
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load());
 
             Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenUnexpectedEndFoundBeforeFinishParsing()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
                 'name': 'test',
                 'address': {
                     'street': 'Something street',
                     'zipcode': '12345'
                 }
             /* Missing a right brace here*/";
-            var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationSource(streamHandler, json);
             var expectedMsg = Resources.FormatError_UnexpectedEnd("address", 7, 44);
 
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load());
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -134,10 +146,22 @@ namespace Microsoft.Framework.ConfigurationModel
             Assert.Equal(expectedMsg, exception.Message);
         }
 
-        [Fact]
+		[Fact]
+		public void ThrowExceptionWhenPassingNullAsStreamHandler()
+		{
+			var expectedMsg = new ArgumentException(Resources.Error_InvalidStreamHandler, "streamHandler").Message;
+
+			var exception = Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(null, ArbitraryFilePath));
+
+			Assert.Equal(expectedMsg, exception.Message);
+		}
+
+		[Fact]
         public void ThrowExceptionWhenKeyIsDuplicated()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
                 'name': 'test',
                 'address': {
                     'street': 'Something street',
@@ -145,59 +169,69 @@ namespace Microsoft.Framework.ConfigurationModel
                 },
                 'name': 'new name'
             }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSrc.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSrc.Load());
 
             Assert.Equal(Resources.FormatError_KeyIsDuplicated("name"), exception.Message);
         }
 
         [Fact]
         public void CommitMethodPreservesCommments()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
   ""name"": ""test"",
   ""address"": {
     ""street"": ""Something street"",
     ""zipcode"": ""12345""
   }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Load(StringToStream(json));
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+			jsonConfigSrc.Load();
 
-            var newContents = StreamToString(outputCacheStream);
+            jsonConfigSrc.Commit();
+
+            var newContents = StreamToString(streamHandler.Stream);
+
             Assert.Equal(json, newContents);
         }
 
         [Fact]
         public void CommitMethodUpdatesValues()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
   ""name"": ""test"",
   ""address"": {
     ""street"": ""Something street"",
     ""zipcode"": ""12345""
   }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Load(StringToStream(json));
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
+
+			jsonConfigSrc.Load();
+
             jsonConfigSrc.Set("name", "new_name");
+
             jsonConfigSrc.Set("address:zipcode", "67890");
 
-            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+            jsonConfigSrc.Commit();
 
-            var newContents = StreamToString(outputCacheStream);
+            var newContents = StreamToString(streamHandler.Stream);
+
             Assert.Equal(json.Replace("test", "new_name").Replace("12345", "67890"), newContents);
         }
 
         [Fact]
         public void CommitMethodCanHandleEmptyValue()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
   ""key1"": """",
   ""key2"": {
     ""key3"": """"
@@ -209,22 +243,25 @@ namespace Microsoft.Framework.ConfigurationModel
     ""key3"": ""value2""
   }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Load(StringToStream(json));
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
+
+			jsonConfigSrc.Load();
             jsonConfigSrc.Set("key1", "value1");
             jsonConfigSrc.Set("key2:key3", "value2");
 
-            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+            jsonConfigSrc.Commit();
 
-            var newContents = StreamToString(outputCacheStream);
+            var newContents = StreamToString(streamHandler.Stream);
+
             Assert.Equal(expectedJson, newContents);
         }
 
         [Fact]
         public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
   ""name"": ""test"",
   ""address"": {
     ""street"": ""Something street"",
@@ -239,20 +276,21 @@ namespace Microsoft.Framework.ConfigurationModel
     ""zipcode"": ""12345""
   }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Load(StringToStream(json));
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            var exception = Assert.Throws<FormatException>(
-                () => jsonConfigSrc.Commit(StringToStream(modifiedJson), outputCacheStream));
+			jsonConfigSrc.Load();
+
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSrc.Commit());
 
             Assert.Equal(Resources.FormatError_UnsupportedJSONToken("StartArray", "name", 3, 12), exception.Message);
         }
 
         [Fact]
         public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
   ""name"": ""test"",
   ""address"": {
     ""street"": ""Something street"",
@@ -267,54 +305,56 @@ namespace Microsoft.Framework.ConfigurationModel
   },
   ""NewKey"": ""NewValue""
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Load(StringToStream(json));
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
 
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => jsonConfigSrc.Commit(StringToStream(newJson), outputCacheStream));
+            jsonConfigSrc.Load();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => jsonConfigSrc.Commit());
 
             Assert.Equal(Resources.FormatError_CommitWhenNewKeyFound("NewKey"), exception.Message);
         }
 
         [Fact]
         public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
-        {
-            var json = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var json = @"{
   ""name"": ""test"",
   ""address"": {
     ""street"": ""Something street"",
     ""zipcode"": ""12345""
   }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Load(StringToStream(json));
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, json);
+
+			jsonConfigSrc.Load();
             json = json.Replace(@"""name"": ""test"",", string.Empty);
 
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => jsonConfigSrc.Commit(StringToStream(json), outputCacheStream));
+            var exception = Assert.Throws<InvalidOperationException>(() => jsonConfigSrc.Commit());
 
             Assert.Equal(Resources.FormatError_CommitWhenKeyMissing("name"), exception.Message);
         }
 
         [Fact]
         public void CanCreateNewConfig()
-        {
-            var targetJson = @"{
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var targetJson = @"{
   ""name"": ""test"",
   ""address:street"": ""Something street"",
   ""address:zipcode"": ""12345""
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Set("name", "test");
+            var jsonConfigSrc = new JsonConfigurationSource(streamHandler, String.Empty);
+
+			jsonConfigSrc.Set("name", "test");
             jsonConfigSrc.Set("address:street", "Something street");
             jsonConfigSrc.Set("address:zipcode", "12345");
 
-            jsonConfigSrc.GenerateNewConfig(outputCacheStream);
+            jsonConfigSrc.Commit();
 
-            Assert.Equal(targetJson, StreamToString(outputCacheStream));
+            Assert.Equal(targetJson, StreamToString(streamHandler.Stream));
         }
 
         private static Stream StringToStream(string str)

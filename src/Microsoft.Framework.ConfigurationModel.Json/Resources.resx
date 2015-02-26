@@ -126,6 +126,9 @@
   <data name="Error_InvalidFilePath" xml:space="preserve">
     <value>File path must be a non-empty string.</value>
   </data>
+  <data name="Error_InvalidStreamHandler" xml:space="preserve">
+    <value>Stream handler must be a non-null stream handler.</value>
+  </data>
   <data name="Error_KeyIsDuplicated" xml:space="preserve">
     <value>A duplicate key '{0}' was found.</value>
   </data>

@@ -56,12 +56,28 @@ namespace Microsoft.Framework.ConfigurationModel.Json
         internal static string FormatError_InvalidFilePath()
         {
             return GetString("Error_InvalidFilePath");
-        }
+		}
 
-        /// <summary>
-        /// A duplicate key '{0}' was found.
-        /// </summary>
-        internal static string Error_KeyIsDuplicated
+		/// <summary>
+		/// Stream handler must be a non-null stream handler.
+		/// </summary>
+		internal static string Error_InvalidStreamHandler
+		{
+			get { return GetString("Error_InvalidStreamHandler"); }
+		}
+
+		/// <summary>
+		/// Stream handler must be a non-null stream handler.
+		/// </summary>
+		internal static string FormatError_InvalidStreamHandler()
+		{
+			return GetString("Error_InvalidStreamHandler");
+		}
+
+		/// <summary>
+		/// A duplicate key '{0}' was found.
+		/// </summary>
+		internal static string Error_KeyIsDuplicated
         {
             get { return GetString("Error_KeyIsDuplicated"); }
         }
