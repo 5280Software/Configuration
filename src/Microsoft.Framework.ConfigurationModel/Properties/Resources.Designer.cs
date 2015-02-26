@@ -74,10 +74,26 @@ namespace Microsoft.Framework.ConfigurationModel
             return GetString("Error_InvalidFilePath");
         }
 
-        /// <summary>
-        /// The switch mappings contain an invalid switch '{0}'.
-        /// </summary>
-        internal static string Error_InvalidSwitchMapping
+		/// <summary>
+		/// Stream handler must be a non-null stream handler.
+		/// </summary>
+		internal static string Error_InvalidStreamHandler
+		{
+			get { return GetString("Error_InvalidStreamHandler"); }
+		}
+
+		/// <summary>
+		/// Stream handler must be a non-null stream handler.
+		/// </summary>
+		internal static string FormatError_InvalidStreamHandler()
+		{
+			return GetString("Error_InvalidStreamHandler");
+		}
+
+		/// <summary>
+		/// The switch mappings contain an invalid switch '{0}'.
+		/// </summary>
+		internal static string Error_InvalidSwitchMapping
         {
             get { return GetString("Error_InvalidSwitchMapping"); }
         }
