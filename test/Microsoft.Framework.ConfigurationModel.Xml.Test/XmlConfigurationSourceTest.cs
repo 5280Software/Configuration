@@ -15,8 +15,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void LoadKeyValuePairsFromValidXml()
-        {
-            var xml = @"
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"
                 <settings>
                     <Data.Setting>
                         <DefaultConnection>
@@ -29,9 +31,9 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </Data.Setting>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("Test.Connection.String", xmlConfigSrc.Get("DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("DATA.SETTING:DefaultConnection:Provider"));
@@ -41,17 +43,19 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void LoadMethodCanHandleEmptyValue()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
     <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
     <Key1></Key1>
     <Key2 Key3="""" />
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal(string.Empty, xmlConfigSrc.Get("Key1"));
             Assert.Equal(string.Empty, xmlConfigSrc.Get("Key2:Key3"));
@@ -59,8 +63,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void CommonAttributesContributeToKeyValuePairs()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
 @"<settings Port=""8008"">
     <Data>
         <DefaultConnection
@@ -71,9 +77,9 @@ namespace Microsoft.Framework.ConfigurationModel
             Provider=""MySql""/>
     </Data>
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("8008", xmlConfigSrc.Get("Port"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
@@ -84,8 +90,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void SupportMixingChildElementsAndAttributes()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings Port='8008'>
                     <Data>
                         <DefaultConnection Provider='SqlClient'>
@@ -96,9 +104,9 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("8008", xmlConfigSrc.Get("Port"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
@@ -109,8 +117,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void NameAttributeContributesToPrefix()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings>
                     <Data Name='DefaultConnection'>
                         <ConnectionString>TestConnectionString</ConnectionString>
@@ -121,9 +131,9 @@ namespace Microsoft.Framework.ConfigurationModel
                         <Provider>MySql</Provider>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -133,8 +143,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void NameAttributeInRootElementContributesToPrefix()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings Name='Data'>
                     <DefaultConnection>
                         <ConnectionString>TestConnectionString</ConnectionString>
@@ -145,9 +157,9 @@ namespace Microsoft.Framework.ConfigurationModel
                         <Provider>MySql</Provider>
                     </Inventory>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -157,8 +169,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void SupportMixingNameAttributesAndCommonAttributes()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings>
                     <Data Name='DefaultConnection'
                           ConnectionString='TestConnectionString'
@@ -167,9 +181,9 @@ namespace Microsoft.Framework.ConfigurationModel
                           <Provider>MySql</Provider>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -179,8 +193,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void SupportCDATAAsTextNode()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings>
                     <Data>
                         <Inventory>
@@ -188,17 +204,19 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("SpecialStringWith<>", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
         public void SupportAndIgnoreComments()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<!-- Comments --> <settings>
                     <Data> <!-- Comments -->
                         <DefaultConnection>
@@ -211,9 +229,9 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </Data>
                 </settings><!-- Comments -->";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -223,8 +241,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void SupportAndIgnoreXMLDeclaration()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<?xml version='1.0' encoding='UTF-8'?>
                 <settings>
                     <Data>
@@ -238,9 +258,9 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -250,8 +270,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void SupportAndIgnoreProcessingInstructions()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<?xml version='1.0' encoding='UTF-8'?>
                 <?xml-stylesheet type='text/xsl' href='style1.xsl'?>
                     <settings>
@@ -267,9 +289,9 @@ namespace Microsoft.Framework.ConfigurationModel
                             </Inventory>
                         </Data>
                     </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load();
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -279,8 +301,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void ThrowExceptionWhenFindDTD()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<!DOCTYPE DefaultConnection[
                     <!ELEMENT DefaultConnection (ConnectionString,Provider)>
                     <!ELEMENT ConnectionString (#PCDATA)>
@@ -298,20 +322,22 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
             var expectedMsg = "For security reasons DTD is prohibited in this XML document. "
                 + "To enable DTD processing set the DtdProcessing property on XmlReaderSettings "
                 + "to Parse and pass the settings into XmlReader.Create method.";
 
-            var exception = Assert.Throws<System.Xml.XmlException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var exception = Assert.Throws<System.Xml.XmlException>(() => xmlConfigSrc.Load());
 
             Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenFindNamespace()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings xmlns:MyNameSpace='http://microsoft.com/wwa/mynamespace'>
                     <MyNameSpace:Data>
                         <DefaultConnection>
@@ -324,10 +350,10 @@ namespace Microsoft.Framework.ConfigurationModel
                         </Inventory>
                     </MyNameSpace:Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
             var expectedMsg = Resources.FormatError_NamespaceIsNotSupported(Resources.FormatMsg_LineInfo(1, 11));
 
-            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load());
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -352,10 +378,22 @@ namespace Microsoft.Framework.ConfigurationModel
             Assert.Equal(expectedMsg, exception.Message);
         }
 
-        [Fact]
+		[Fact]
+		public void ThrowExceptionWhenPassingNullAsStreamHandler()
+		{
+			var expectedMsg = new ArgumentException(Resources.Error_InvalidStreamHandler, "streamHandler").Message;
+
+			var exception = Assert.Throws<ArgumentException>(() => new XmlConfigurationSource(null, ArbitraryFilePath));
+
+			Assert.Equal(expectedMsg, exception.Message);
+		}
+
+		[Fact]
         public void ThrowExceptionWhenKeyIsDuplicated()
-        {
-            var xml =
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml =
                 @"<settings>
                     <Data>
                         <DefaultConnection>
@@ -367,19 +405,21 @@ namespace Microsoft.Framework.ConfigurationModel
                         <Provider>NewProvider</Provider>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
             var expectedMsg = Resources.FormatError_KeyIsDuplicated("Data:DefaultConnection:ConnectionString",
                 Resources.FormatMsg_LineInfo(8, 52));
 
-            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load());
 
             Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void CommitMethodPreservesCommmentsAndProcessingInstructionsAndWhiteSpaces()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
                     <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
                     <settings>
                         <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
@@ -394,20 +434,22 @@ namespace Microsoft.Framework.ConfigurationModel
                             </Inventory>
                         </Data>
                     </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Load(StringToStream(xml));
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            xmlConfigSrc.Commit(StringToStream(xml), outputCacheStream);
+			xmlConfigSrc.Load();
 
-            var newContents = StreamToString(outputCacheStream);
+            xmlConfigSrc.Commit();
+
+            var newContents = StreamToString(streamHandler.Stream);
             Assert.Equal(xml, newContents);
         }
 
         [Fact]
         public void CommitMethodUpdatesValues()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
     <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
@@ -422,22 +464,23 @@ namespace Microsoft.Framework.ConfigurationModel
         </Inventory>
     </Data>
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Load(StringToStream(xml));
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
+            xmlConfigSrc.Load();
             xmlConfigSrc.Set("Data:DefaultConnection:Provider", "NewSqlClient");
             xmlConfigSrc.Set("Data:Inventory:Provider", "NewMySql");
 
-            xmlConfigSrc.Commit(StringToStream(xml), outputCacheStream);
+            xmlConfigSrc.Commit();
 
-            var newContents = StreamToString(outputCacheStream);
+            var newContents = StreamToString(streamHandler.Stream);
             Assert.Equal(xml.Replace("SqlClient", "NewSqlClient").Replace("MySql", "NewMySql"), newContents);
         }
 
         [Fact]
         public void CommitMethodCanHandleEmptyValue()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
     <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
@@ -451,22 +494,24 @@ namespace Microsoft.Framework.ConfigurationModel
     <Key1>Value1</Key1>
     <Key2 Key3=""Value2"" />
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Load(StringToStream(xml));
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
+
+			xmlConfigSrc.Load();
             xmlConfigSrc.Set("Key1", "Value1");
             xmlConfigSrc.Set("Key2:Key3", "Value2");
 
-            xmlConfigSrc.Commit(StringToStream(xml), outputCacheStream);
+            xmlConfigSrc.Commit();
 
-            var newContents = StreamToString(outputCacheStream);
+            var newContents = StreamToString(streamHandler.Stream);
             Assert.Equal(expectedXml, newContents);
         }
 
         [Fact]
         public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
                     <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
                     <settings>
                         <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
@@ -496,12 +541,11 @@ namespace Microsoft.Framework.ConfigurationModel
                             </Inventory>
                         </MyNameSpace:Data>
                     </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Load(StringToStream(xml));
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            var exception = Assert.Throws<FormatException>(
-                () => xmlConfigSrc.Commit(StringToStream(modifiedXml), outputCacheStream));
+			xmlConfigSrc.Load();
+
+            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Commit());
 
             Assert.Equal(Resources.FormatError_NamespaceIsNotSupported(Resources.FormatMsg_LineInfo(3, 31)),
                 exception.Message);
@@ -509,8 +553,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
     <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
@@ -541,12 +587,11 @@ namespace Microsoft.Framework.ConfigurationModel
         </Inventory>
     </Data>
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Load(StringToStream(xml));
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => xmlConfigSrc.Commit(StringToStream(modifiedXml), outputCacheStream));
+			xmlConfigSrc.Load();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => xmlConfigSrc.Commit());
 
             Assert.Equal(
                 Resources.FormatError_CommitWhenNewKeyFound("Data:DefaultConnection:NewKey"), exception.Message);
@@ -554,8 +599,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
-        {
-            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
     <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
@@ -583,12 +630,11 @@ namespace Microsoft.Framework.ConfigurationModel
         </Inventory>
     </Data>
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Load(StringToStream(xml));
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, xml);
 
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => xmlConfigSrc.Commit(StringToStream(modifiedXml), outputCacheStream));
+			xmlConfigSrc.Load();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => xmlConfigSrc.Commit());
 
             Assert.Equal(
                 Resources.
@@ -598,20 +644,22 @@ namespace Microsoft.Framework.ConfigurationModel
 
         [Fact]
         public void CanCreateNewConfig()
-        {
-            var targetXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+		{
+			var streamHandler = new StringConfigurationStreamHandler();
+
+			var targetXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <settings>
   <Key1 Name=""Key2:Key3"">Value1</Key1>
   <Key4>Value2</Key4>
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Set("Key1:Key2:Key3", "Value1");
+            var xmlConfigSrc = new XmlConfigurationSource(streamHandler, String.Empty);
+
+			xmlConfigSrc.Set("Key1:Key2:Key3", "Value1");
             xmlConfigSrc.Set("Key4", "Value2");
 
-            xmlConfigSrc.GenerateNewConfig(outputCacheStream);
+            xmlConfigSrc.Commit();
 
-            var newContents = StreamToString(outputCacheStream);
+            var newContents = StreamToString(streamHandler.Stream);
             Assert.Equal(targetXml, newContents);
         }
 

@@ -151,7 +151,7 @@ namespace Microsoft.Framework.ConfigurationModel
 		{
 			var expectedMsg = new ArgumentException(Resources.Error_InvalidStreamHandler, "streamHandler").Message;
 
-			var exception = Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(null, ArbitraryFilePath));
+			var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(null, ArbitraryFilePath));
 
 			Assert.Equal(expectedMsg, exception.Message);
 		}

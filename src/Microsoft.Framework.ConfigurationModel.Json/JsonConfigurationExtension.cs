@@ -3,12 +3,17 @@
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public static class JsonConfigurationExtension
-    {
-        public static IConfigurationSourceContainer AddJsonFile(this IConfigurationSourceContainer configuration, string path)
-        {
-            configuration.Add(new JsonConfigurationSource(path));
-            return configuration;
-        }
-    }
+	public static class JsonConfigurationExtension
+	{
+		public static IConfigurationSourceContainer AddJsonFile(this IConfigurationSourceContainer configuration, string path,
+			IConfigurationStreamHandler streamHandler = null)
+		{
+			if (streamHandler == null)
+				configuration.Add(new JsonConfigurationSource(path));
+			else
+				configuration.Add(new JsonConfigurationSource(streamHandler, path));
+
+			return configuration;
+		}
+	}
 }
