@@ -1,25 +1,28 @@
 {
-    "version": "1.0.0-*",
-    "description": "XML configuration source for the ConfigurationModel package.",
-    "dependencies": {
-        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
-        "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" },
-    },
-    "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.Xml": ""
-            }
-        },
-        "aspnet50": { 
-            "frameworkAssemblies": {
-                "System.Xml": ""
-            }
-        },
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Xml.XmlSerializer": "4.0.10-beta-*"
-            }
-        }
+  "version": "1.0.0-beta3",
+  "description": "XML configuration source for the ConfigurationModel package.",
+  "dependencies": {
+    "Microsoft.Framework.ConfigurationModel": "1.0.0-beta3",
+    "Microsoft.Framework.ConfigurationModel.Shared": {
+      "version": "1.0.0-beta3",
+      "type": "build"
     }
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Xml": ""
+      }
+    },
+    "aspnet50": {
+      "frameworkAssemblies": {
+        "System.Xml": ""
+      }
+    },
+    "aspnetcore50": {
+      "dependencies": {
+        "System.Xml.XmlSerializer": "4.0.10-beta-22605"
+      }
+    }
+  }
 }
